@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconnaissance Report - {{ url }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .tech-item {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .tech-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .tech-version {
+            color: #7f8c8d;
+        }
+        .tech-category {
+            background-color: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Reconnaissance Report</h1>
+            <p><strong>Target URL:</strong> {{ url }}</p>
+            <p><strong>Scan Date:</strong> {{ timestamp }}</p>
+        </div>
+
+        <div class="section">
+            <h2>Web Technologies</h2>
+            {% if results.technologies %}
+                {% for tech_name, tech_info in results.technologies.items() %}
+                    <div class="tech-item">
+                        <span class="tech-name">{{ tech_name }}</span>
+                        {% if tech_info.version %}
+                            <span class="tech-version">v{{ tech_info.version }}</span>
+                        {% endif %}
+                        {% for category in tech_info.categories %}
+                            <span class="tech-category">{{ category }}</span>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No technologies detected</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Raw Data</h2>
+            <p>Raw data file: {{ results.raw_data_file }}</p>
+        </div>
+    </div>
+</body>
+</html> 

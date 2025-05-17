@@ -1,0 +1,120 @@
+1. File: docs/AGENT_ARCHITECTURE.md
+markdown
+# Kiến Trúc Agent trong Reconnaissance Autogen
+
+## 1. Tổng Quan Hệ Thống Agent
+
+Hệ thống gồm các agent chuyên biệt hoạt động cùng nhau:
+- **Orchestrator**: Điều phối luồng công việc
+- **SubdomainAgent**: Liệt kê subdomain
+- **WebTechAgent**: Phân tích công nghệ web
+- **ReporterAgent**: Tạo báo cáo
+- **UserProxy**: Giao diện người dùng
+
+## 2. Định Nghĩa Agent Cơ Bản
+
+```python
+from autogen import AssistantAgent
+
+class BaseAgent(AssistantAgent):
+    def __init__(self, name, system_message, tools=[]):
+        super().__init__(
+            name=name,
+            system_message=system_message,
+            llm_config={
+                "config_list": [...],  # DeepSeek API config
+                "tools": tools  # Danh sách tools
+            }
+        )
+3. Cách Tương Tác Giữa Các Agent
+3.1. Khởi tạo GroupChat
+python
+from autogen import GroupChat, GroupChatManager
+
+groupchat = GroupChat(
+    agents=[orchestrator, subdomain_agent, webtech_agent],
+    messages=[],
+    max_round=12
+)
+manager = GroupChatManager(groupchat=groupchat)
+3.2. Flow Tương Tác Điển Hình
+UserProxy nhận input URL
+
+Gửi đến Orchestrator
+
+Orchestrator phân tích và giao nhiệm vụ:
+
+SubdomainAgent: find_subdomains(domain)
+
+WebTechAgent: analyze_tech(url)
+
+Các agent trả kết quả về Orchestrator
+
+Orchestrator tổng hợp và gửi cho ReporterAgent
+
+ReporterAgent tạo báo cáo hoàn chỉnh
+
+4. Cách Agent Gọi Tool
+4.1. Định Nghĩa Tool
+python
+# File: tools/webtech_tool.py
+def analyze_technology(url: str) -> dict:
+    """Phân tích công nghệ website sử dụng Wappalyzer"""
+    # Triển khai thực tế gọi Wappalyzer API
+    return {
+        "cms": "WordPress",
+        "server": "nginx",
+        "languages": ["PHP", "JavaScript"]
+    }
+4.2. Đăng Ký Tool với Agent
+python
+# File: core/agents/webtech_agent.py
+webtech_agent = BaseAgent(
+    name="WebTechAgent",
+    system_message="Bạn là chuyên gia phân tích công nghệ web",
+    tools=[{
+        "type": "function",
+        "function": {
+            "name": "analyze_technology",
+            "description": "Phát hiện công nghệ sử dụng trên website",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string"}
+                },
+                "required": ["url"]
+            }
+        }
+    }]
+)
+4.3. Flow Gọi Tool
+Agent nhận message yêu cầu phân tích
+
+Tự động xác định cần gọi tool nào
+
+Gửi request đến UserProxy (nơi đăng ký hàm thực tế)
+
+Nhận kết quả và xử lý tiếp
+
+5. Ví Dụ Đầy Đủ
+python
+# File: examples/subdomain_scan_example.py
+from autogen import UserProxyAgent
+from core.agents.subdomain_agent import SubdomainAgent
+from tools.subdomain_tool import find_subdomains
+
+# 1. Tạo agent
+subdomain_agent = SubdomainAgent()
+
+# 2. Tạo user proxy và đăng ký tool
+user_proxy = UserProxyAgent(
+    "user_proxy",
+    human_input_mode="NEVER",
+    function_map={"find_subdomains": find_subdomains}
+)
+
+# 3. Bắt đầu chat
+user_proxy.initiate_chat(
+    subdomain_agent,
+    message="Hãy tìm subdomain của example.com"
+)

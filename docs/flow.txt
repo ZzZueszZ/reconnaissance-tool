@@ -1,0 +1,19 @@
+User Input → Orchestrator Agent → [Subdomain Agent] [WebTech Agent]  → Report Generator Agent → Final Report
+
+Quy Trình Hoạt Động
+Nhập liệu: User nhập URL vào hệ thống
+
+Điều phối: Orchestrator phân tích yêu cầu và phân công nhiệm vụ
+
+Thực thi:
+
+SubdomainAgent tìm các subdomain
+
+WebTechAgent phân tích công nghệ
+
+
+Tổng hợp: Orchestrator thu thập kết quả từ các agent
+
+Báo cáo: ReportAgent tạo báo cáo hoàn chỉnh
+
+Xuất kết quả: Trả về báo cáo cho người dùng
